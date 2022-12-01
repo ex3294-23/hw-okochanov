@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"stringutil"
+)
+
 func main() {
-	// Place your code here.
+	fmt.Printf(stringutil.Reverse("Hello, OTUS!"))
 }
