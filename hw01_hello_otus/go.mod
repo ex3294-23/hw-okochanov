@@ -1,4 +1,4 @@
-module github.com/ex3294-23/hw-okochanov/tree/hw01_hello_otus
+module github.com/ex3294-23/hw-okochanov/hw01_hello_otus
 
 go 1.18
 
