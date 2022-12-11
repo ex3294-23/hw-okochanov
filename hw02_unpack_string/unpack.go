@@ -1,53 +1,54 @@
-package main
+package hw02unpackstring
 
 import (
-    "fmt"
-    "errors"
-    "unicode"
+	"errors"
+	"strings"
+	"strconv"
+	"unicode"
+	"unicode/utf8"
 )
 
 var ErrInvalidString = errors.New("invalid string")
 
-
 func Unpack(s string) (string, error) {
-    sr := []rune(s)
-    var s2 string
-    var n int
-    var backslash bool
-    
-    for i, item := range sr {
-        if unicode.IsDigit(item) && i == 0 {
-            return "", ErrInvalidString
-        }
+	if len(s) == 0 {
+		return "", nil
+	}
 
-        if unicode.IsDigit(item) && unicode.IsDigit(sr[i - 1]) && sr[i - 2] != '\\' {
-            return "", ErrInvalidString
-        }             
-        if item == '\\' && !backslash {
-            backslash = true
-            continue
-        }   
-        if backslash && unicode.IsLetter(item) {
-            return "", ErrInvalidString
-        }
-        if backslash {
-            s2 += string(item)
-            backslash = false
-            continue
-        }
-        if unicode.IsDigit(item) {
-            n = int(item - '0')
-            if n == 0 {
-                s2 = s2[:len(s2) - 1]
-                continue
-            }
-            for j := 0; j < n - 1; j ++ {   
-                s2 += string(sr[i - 1])
-            } 
-            continue     
-        }     
-        s2 += string(item)
-    }
+	entranceRune, _ := utf8.DecodeRuneInString(s)
+	if unicode.IsNumber(entranceRune) {
+		return "", ErrInvalidString
+	}
+	arrayRune := []rune(s)
+	var result strings.Builder
+	var prev rune
 
-    return s2, nil
+	for i, cur := range arrayRune {
+		if i < 1 {
+			prev = cur
+			result.WriteRune(cur)
+			continue
+		}
+		if unicode.IsNumber(prev) && unicode.IsNumber(cur) {
+			return "", ErrInvalidString
+		}
+
+		if unicode.IsNumber(cur) {
+			if cur == 48 {
+				s := []rune(result.String())
+				s = s[:i-1]
+				result.Reset()
+				result.WriteString(string(s))
+				continue
+			}
+
+			cur, _ := strconv.ParseInt(string(cur), 10, 32)
+
+			result.WriteString(strings.Repeat(string(arrayRune[i-1]), int(cur)-1))
+		} else {
+			result.WriteRune(cur)
+		}
+		prev = cur
+	}
+	return result.String(), nil
 }
