@@ -2,8 +2,8 @@ package hw02unpackstring
 
 import (
 	"errors"
-	"strings"
 	"strconv"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 )
@@ -16,14 +16,14 @@ func Unpack(s string) (string, error) {
 	}
 
 	entranceRune, _ := utf8.DecodeRuneInString(s)
-	if unicode.IsNumber(entranceRune) {
+		if unicode.IsNumber(entranceRune) {
 		return "", ErrInvalidString
-	}
-	arrayRune := []rune(s)
-	var result strings.Builder
-	var prev rune
+		}
+		arrayRune := []rune(s)
+		var result strings.Builder
+		var prev rune
 
-	for i, cur := range arrayRune {
+		for i, cur := range arrayRune {
 		if i < 1 {
 			prev = cur
 			result.WriteRune(cur)
@@ -49,6 +49,6 @@ func Unpack(s string) (string, error) {
 			result.WriteRune(cur)
 		}
 		prev = cur
-	}
+        }
 	return result.String(), nil
 }
