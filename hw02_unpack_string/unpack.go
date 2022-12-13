@@ -53,4 +53,3 @@ func Unpack(inputString string) (string, error) {
 	resultBuilder.WriteString(targetToRepeat)
 	return resultBuilder.String(), nil
 }
-
