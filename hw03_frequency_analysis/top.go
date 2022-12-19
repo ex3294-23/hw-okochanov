@@ -5,35 +5,62 @@ import (
 	"sort"
 )
 
-var r = regexp.MustCompile(`\s+`)
+type WordCount struct {
+	Word  string
+	Count int
+}
 
-func Top10(text string) []string {
-	if len(text) == 0 {
-		return nil
+type WordCounts []WordCount
+
+func (wc WordCounts) Len() int { return len(wc) }
+
+func (wc WordCounts) Swap(i, j int) { wc[i], wc[j] = wc[j], wc[i] }
+
+func (wc WordCounts) Less(i, j int) bool {
+	if wc[i].Count == wc[j].Count {
+		return wc[i].Word < wc[j].Word
+	}
+	return wc[i].Count > wc[j].Count
+}
+
+func structSort(wordToCountMap map[string]int) WordCounts {
+	wordCounts := make(WordCounts, 0, len(wordToCountMap))
+	for k, v := range wordToCountMap {
+		wordCounts = append(wordCounts, WordCount{k, v})
 	}
 
-	wordsMap := make(map[string]int)
+	sort.Sort(wordCounts)
 
-	words := r.Split(text, -1)
-	for _, word := range words {
-		wordsMap[word]++
+	return wordCounts
+}
+
+func prepareWords(str string) []string {
+	regExpoSplitter := regexp.MustCompile(`[^\s,;\n\t]+`)
+
+	words := regExpoSplitter.FindAllString(str, -1)
+
+	return words
+}
+
+func Top10(str string) []string {
+	var top10 []string
+
+	if str == "" {
+		return top10
 	}
 
-	result := make([]string, 0, len(wordsMap))
-	for name := range wordsMap {
-		result = append(result, name)
+	words := prepareWords(str)
+	wordsToCountMap := make(map[string]int)
+
+	for _, val := range words {
+		wordsToCountMap[val]++
 	}
 
-	sort.Slice(result, func(i, j int) bool {
-		first := result[i]
-		second := result[j]
+	sortedWords := structSort(wordsToCountMap)
 
-		if wordsMap[first] == wordsMap[second] {
-			return first < second
-		}
+	for i := 0; i < 10; i++ {
+		top10 = append(top10, sortedWords[i].Word)
+	}
 
-		return wordsMap[first] > wordsMap[second]
-	})
-
-	return result[:10]
+	return top10
 }
