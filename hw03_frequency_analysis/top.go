@@ -38,5 +38,5 @@ func Top10(text string) []string {
 	} else {
 		fmt.Print("Need more words")
 	}
-	return result[:10] //.
+	return result[:10]
 }
