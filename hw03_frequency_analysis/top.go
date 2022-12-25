@@ -1,42 +1,86 @@
 package hw03frequencyanalysis
 
 import (
-	"fmt"
-	"regexp"
 	"sort"
+	"strings"
 )
 
-var r = regexp.MustCompile(`\s+`)
+type wordsAndCountStruct struct {
+	word  string
+	count int
+}
 
-func Top10(text string) []string {
-	if len(text) == 0 {
-		return nil
+type WordsAndCountSlice []wordsAndCountStruct
+
+func (s WordsAndCountSlice) Len() int {
+	return len(s)
+}
+
+func (s WordsAndCountSlice) Less(i, j int) bool {
+	if s[i].count == s[j].count {
+		return s[i].word < s[j].word
 	}
+	return s[i].count > s[j].count
+}
 
-	wordsMap := make(map[string]int)
+func (s WordsAndCountSlice) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
 
-	words := r.Split(text, -1)
-	for _, word := range words {
-		wordsMap[word]++
-	}
+func Top10(str string) []string {
+	words := getSortedSliceFromStr(str)
 
-	result := make([]string, 0)
-	for name := range wordsMap {
-		result = append(result, name)
-	}
-	if len(wordsMap) <= len(result) {
-		sort.Slice(result, func(i, j int) bool {
-			first := result[i]
-			second := result[j]
+	wcSlice := getWordsAndCountSlice(words)
 
-			if wordsMap[first] == wordsMap[second] {
-				return first < second
+	sort.Sort(wcSlice)
+
+	return formatResult(wcSlice)
+}
+
+func getWordsAndCountSlice(words []string) WordsAndCountSlice {
+	wcSlice := WordsAndCountSlice{}
+
+	currentWord := ""
+	currentCount := 0
+	for _, value := range words {
+		if value != currentWord {
+			if currentWord != "" {
+				wcSlice = append(wcSlice, wordsAndCountStruct{currentWord, currentCount})
 			}
 
-			return wordsMap[first] > wordsMap[second]
-		})
-	} else {
-		fmt.Print("Need more words")
+			currentWord = value
+			currentCount = 1
+		} else {
+			currentCount++
+		}
 	}
-	return result[:10]
+	if currentWord != "" {
+		wcSlice = append(wcSlice, wordsAndCountStruct{currentWord, currentCount})
+	}
+
+	return wcSlice
+}
+
+func getSortedSliceFromStr(str string) []string {
+	words := strings.Fields(str)
+
+	sort.Slice(words, func(i, j int) bool {
+		return words[i] < words[j]
+	})
+	return words
+}
+
+func formatResult(wcSlice WordsAndCountSlice) []string {
+	res := []string{}
+
+	for _, wordsStruct := range wcSlice {
+		res = append(res, wordsStruct.word)
+	}
+
+	limit := 10
+	if len(res) < 10 {
+		limit = len(res)
+	}
+
+	return res[0:limit]
 }
