@@ -58,7 +58,7 @@ func getWordsAndCountSlice(words []string) WordsAndCountSlice {
 		wcSlice = append(wcSlice, wordsAndCountStruct{currentWord, currentCount})
 	}
 
-	return wcSlice
+	return wcSlice //..
 }
 
 func getSortedSliceFromStr(str string) []string {
