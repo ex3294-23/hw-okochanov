@@ -2,97 +2,116 @@ package hw04lrucache
 
 type List interface {
 	Len() int
-	Front() *listItem
-	Back() *listItem
-	PushFront(v interface{}) *listItem
-	PushBack(v interface{}) *listItem
-	Remove(i *listItem)
-	MoveToFront(i *listItem)
+	Front() *ListItem
+	Back() *ListItem
+	PushFront(v interface{}) *ListItem
+	PushBack(v interface{}) *ListItem
+	Remove(i *ListItem)
+	MoveToFront(i *ListItem)
 }
 
-type listItem struct {
+type ListItem struct {
 	Value interface{}
-	Prev  *listItem
-	Next  *listItem
+	Next  *ListItem
+	Prev  *ListItem
 }
 
 type list struct {
-	front  *listItem
-	back   *listItem
+	first  *ListItem
+	last   *ListItem
 	length int
 }
 
-func (l *list) Len() int {
+func (l list) Len() int {
 	return l.length
 }
 
-func (l *list) Front() *listItem {
-	return l.front
+func (l list) Front() *ListItem {
+	return l.first
 }
 
-func (l *list) Back() *listItem {
-	return l.back
+func (l list) Back() *ListItem {
+	return l.last
 }
 
-func (l *list) PushBack(v interface{}) *listItem {
-	newItem := &listItem{
-		Value: v,
-		Prev:  nil,
-		Next:  l.back,
+func (l *list) PushFront(v interface{}) *ListItem {
+	listItem := ListItem{Value: v}
+
+	if l.first != nil {
+		listItem.Next = l.first
+		l.first.Prev = &listItem
 	}
 
-	if l.back == nil {
-		l.front = newItem
-	} else {
-		l.back.Prev = newItem
+	if l.first == nil && l.last == nil {
+		l.last = &listItem
 	}
 
-	l.back = newItem
+	l.first = &listItem
 	l.length++
-	return newItem
+
+	return &listItem
 }
 
-func (l *list) PushFront(v interface{}) *listItem {
-	newItem := &listItem{
-		Value: v,
-		Prev:  l.front,
-		Next:  nil,
+func (l *list) PushBack(v interface{}) *ListItem {
+	listItem := ListItem{Value: v}
+
+	if l.last != nil {
+		listItem.Prev = l.last
+		l.last.Next = &listItem
 	}
 
-	if l.front == nil {
-		l.back = newItem
-	} else {
-		l.front.Next = newItem
+	if l.first == nil && l.last == nil {
+		l.first = &listItem
 	}
-	l.front = newItem
+
+	l.last = &listItem
 	l.length++
-	return newItem
+
+	return &listItem
 }
 
-func (l *list) Remove(i *listItem) {
-	if i == nil {
-		return
-	}
+func (l *list) Remove(listItem *ListItem) {
 	l.length--
 
-	if i.Prev != nil {
-		i.Prev.Next = i.Next
-	} else {
-		l.back = i.Next
+	if l.first == listItem && l.last == listItem {
+		l.first = nil
+		l.last = nil
+		return
 	}
 
-	if i.Next != nil {
-		i.Next.Prev = i.Prev
+	if l.first == listItem {
+		l.first = listItem.Next
 	} else {
-		l.front = i.Prev
+		listItem.Prev.Next = listItem.Next
 	}
+	if l.last == listItem {
+		l.last = listItem.Prev
+	} else {
+		listItem.Next.Prev = listItem.Prev
+	}
+
+	listItem.Prev = nil
+	listItem.Next = nil
 }
 
-func (l *list) MoveToFront(i *listItem) {
-	l.Remove(i)
-	l.PushFront(i.Value)
+func (l *list) MoveToFront(listItem *ListItem) {
+	if l.first == listItem {
+		return
+	}
+	if l.last == listItem {
+		listItem.Prev.Next = nil
+		l.last = listItem.Prev
+	} else {
+		listItem.Next.Prev = listItem.Prev
+	}
+
+	listItem.Prev.Next = listItem.Next
+	listItem.Prev = nil
+	listItem.Next = l.first
+	l.first.Prev = listItem
+	l.first = listItem
 }
 
 func NewList() List {
-	return &list{}
+	return new(list)
 }
