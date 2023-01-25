@@ -15,20 +15,20 @@ func Run(tasks []Task, n int, m int) error {
 
 	wg := sync.WaitGroup{}
 	wg.Add(n)
-	var z int32
+	var errCounter int32
 	for i := 0; i < n; i++ {
 		go func() {
 			defer wg.Done()
 			for task := range workCh {
 				err := task()
 				if err != nil {
-					atomic.AddInt32(&z, 1)
+					atomic.AddInt32(&errCounter, 1)
 				}
 			}
 		}()
 	}
 	for _, task := range tasks {
-		if atomic.LoadInt32(&z) >= int32(m) {
+		if atomic.LoadInt32(&errCounter) >= int32(m) {
 			break
 		}
 		workCh <- task
@@ -36,7 +36,7 @@ func Run(tasks []Task, n int, m int) error {
 
 	close(workCh)
 	wg.Wait()
-	if z >= int32(m) {
+	if errCounter >= int32(m) {
 		return ErrErrorsLimitExceeded
 	}
 	return nil

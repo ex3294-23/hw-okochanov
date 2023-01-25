@@ -59,9 +59,9 @@ func TestRun(t *testing.T) {
 		maxErrorsCount := 1
 
 		start := time.Now()
-		result := Run(tasks, workersCount, maxErrorsCount)
+		err := Run(tasks, workersCount, maxErrorsCount)
 		elapsedTime := time.Since(start)
-		require.Nil(t, result)
+		require.Nil(t, err)
 
 		require.Equal(t, runTasksCount, int32(tasksCount), "not all tasks were completed")
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
