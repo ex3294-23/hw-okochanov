@@ -17,99 +17,77 @@ type ListItem struct {
 }
 
 type list struct {
-	first  *ListItem
-	last   *ListItem
-	length int
+	len   int
+	front *ListItem
+	back  *ListItem
 }
 
-func (l list) Len() int {
-	return l.length
+func (l *list) Len() int {
+	return l.len
 }
 
-func (l list) Front() *ListItem {
-	return l.first
+func (l *list) Front() *ListItem {
+	return l.front
 }
 
-func (l list) Back() *ListItem {
-	return l.last
+func (l *list) Back() *ListItem {
+	return l.back
 }
 
 func (l *list) PushFront(v interface{}) *ListItem {
-	listItem := ListItem{Value: v}
-
-	if l.first != nil {
-		listItem.Next = l.first
-		l.first.Prev = &listItem
+	li := &ListItem{Value: v, Next: l.front, Prev: nil}
+	if l.front != nil {
+		l.front.Prev = li
 	}
-
-	if l.first == nil && l.last == nil {
-		l.last = &listItem
+	if l.back == nil {
+		l.back = li
 	}
+	l.front = li
+	l.len++
 
-	l.first = &listItem
-	l.length++
-
-	return &listItem
+	return l.front
 }
 
 func (l *list) PushBack(v interface{}) *ListItem {
-	listItem := ListItem{Value: v}
-
-	if l.last != nil {
-		listItem.Prev = l.last
-		l.last.Next = &listItem
+	if l.len == 0 {
+		return l.PushFront(v)
 	}
 
-	if l.first == nil && l.last == nil {
-		l.first = &listItem
-	}
+	l.back = &ListItem{Value: v, Next: nil, Prev: l.back}
+	l.back.Prev.Next = l.back
+	l.len++
 
-	l.last = &listItem
-	l.length++
-
-	return &listItem
+	return l.back
 }
 
-func (l *list) Remove(listItem *ListItem) {
-	l.length--
+func (l *list) Remove(i *ListItem) {
+	if i.Next == nil {
+		if i.Prev != nil {
+			i.Prev.Next = nil
+		}
+		l.back = i.Prev
+	}
+	if i.Prev == nil {
+		if i.Next != nil {
+			i.Next.Prev = nil
+		}
+		l.front = i.Next
+	}
 
-	if l.first == listItem && l.last == listItem {
-		l.first = nil
-		l.last = nil
+	if i.Next != nil && i.Prev != nil {
+		i.Next.Prev = i.Prev
+		i.Prev.Next = i.Next
+	}
+	l.len--
+}
+
+func (l *list) MoveToFront(i *ListItem) {
+	if i.Prev == nil {
 		return
 	}
 
-	if l.first == listItem {
-		l.first = listItem.Next
-	} else {
-		listItem.Prev.Next = listItem.Next
-	}
-	if l.last == listItem {
-		l.last = listItem.Prev
-	} else {
-		listItem.Next.Prev = listItem.Prev
-	}
-
-	listItem.Prev = nil
-	listItem.Next = nil
-}
-
-func (l *list) MoveToFront(listItem *ListItem) {
-	if l.first == listItem {
-		return
-	}
-	if l.last == listItem {
-		listItem.Prev.Next = nil
-		l.last = listItem.Prev
-	} else {
-		listItem.Next.Prev = listItem.Prev
-	}
-
-	listItem.Prev.Next = listItem.Next
-	listItem.Prev = nil
-	listItem.Next = l.first
-	l.first.Prev = listItem
-	l.first = listItem
+	l.Remove(i)
+	l.PushFront(i.Value)
 }
 
 func NewList() List {
